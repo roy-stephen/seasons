@@ -1,0 +1,9 @@
+test.txt
+build/
+dist/
+seasons/__pycache__/
+seasons/detection/__pycache__/
+seasons/examples/__pycache__/
+seasons/utils/__pycache__/
+seasons.egg-info/
+tests/
