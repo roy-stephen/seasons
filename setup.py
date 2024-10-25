@@ -11,7 +11,7 @@ setuptools.setup(
     description="A Python package for detecting seasonality in time series data",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/your-username/seasons",
+    # url="https://github.com/your-username/seasons",
     license="MIT", 
     python_requires=">=3.8",  # Specify the required Python version
     install_requires=[
