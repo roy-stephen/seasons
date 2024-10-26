@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from fractions import Fraction
+# from fractions import Fraction
 from scipy import stats
 from..detection import brute_force_seasonality
 from..utils import stationarize
