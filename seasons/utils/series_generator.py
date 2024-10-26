@@ -55,3 +55,5 @@ def series_generator(
         time_series += np.random.normal(scale=noise_stddev, size=length)
 
     return time_series
+
+__all__ = [series_generator]

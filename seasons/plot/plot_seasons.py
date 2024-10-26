@@ -11,7 +11,11 @@ def plot_seasonal_components(
         seasons: np.typing.ArrayLike = None,
         alpha: float = 0.05
 ):
-    # TODO: check if the input seasons is indeed an arraylike and that max seasons <= len(series)
+    if not isinstance(series, np.typing.ArrayLike):
+        raise ValueError("Invalid series type")
+    if seasons and not isinstance(seasons, np.typing.ArrayLike):
+        raise ValueError("Invalid seasons type")
+    
     # Check if all items of seasons are integer # TODO: allow for decimal seasons next
     if seasons: # if the user specify some seasonal periods
         if not all(isinstance(s, int) for s in seasons):
@@ -19,7 +23,7 @@ def plot_seasonal_components(
             seasons = [int(s) for s in seasons]
     else: # if the user don't specify any seasons
         print("No seasons were specified.\nUsing bruteforce to estimate seasonal periods...")
-        seasons = brute_force_seasonality(series)
+        seasons = brute_force_seasonality(series, apply_cartesian=False)
         print(f"Here are the detected seasons: {seasons}.")
     
     # Stationarize
@@ -27,12 +31,16 @@ def plot_seasonal_components(
     N = len(stationarized)
     
     # Initialize plot
-    N_FIG = len(seasons) + 2
+    N_FIG = len(seasons) + 4 # 4 spaces for the orignal series, the stationary series, the sum of the seasonal effects and the residuals
     fig, ax = plt.subplots(nrows=N_FIG, ncols=1, figsize=(16, 6*N_FIG))
     # Plot series
     ax[0].plot(series, label="Original series")
+    ax[0].legend()
     ax[1].plot(stationarized, label=f"Stationary series (d={int(integration_order)})")
+    ax[1].legend()
 
+    # initialize total seasonal effect
+    sum_seasonal = 0
     # Estimate seasonal average for each seasons
     for i, s in enumerate(seasons):
         # Reshape
@@ -43,19 +51,28 @@ def plot_seasonal_components(
         avg = _repeat_array_until_length(avg, N)
         lower_bound = _repeat_array_until_length(lower_bound, N)
         upper_bound = _repeat_array_until_length(upper_bound, N)
+        # Update total seasonal effect
+        sum_seasonal += avg
         # Plot component
-        ax[i+2].plot(avg, label=f"Seasonal Component s={s}")
-        ax[i+2].fill_between(
+        ax[i+4].plot(avg, label=f"Seasonal Component s={s}, d={integration_order}")
+        ax[i+4].fill_between(
             range(N),
             upper_bound,
             lower_bound,
             color="aqua",
-            alpha=0.3,
+            alpha=0.15,
             label="Confidence Bound"
         )
-    
+        ax[i+4].legend()
+    # Plot sum seasons
+    ax[2].plot(sum_seasonal, label=f"Total Seasonal Effect, d={integration_order}")
+    ax[2].legend()
+    # Plot residuals
+    residuals = stationarized - sum_seasonal
+    ax[3].plot(residuals, label=f"Residuals, d={integration_order}")
+    ax[3].legend()
     # Render plot
-    plt.legend()
+    plt.suptitle("Seasonal Components")
     plt.show()
 
     return None
@@ -164,6 +181,8 @@ def _repeat_array_until_length(arr, desired_length):
     repetitions = int(np.ceil(desired_length / len(arr)))  # Calculate repetitions needed
     repeated_arr = np.tile(arr, repetitions)  # Repeat the array
     return repeated_arr[:desired_length]  # Truncate to the desired length
+
+__all__ = [plot_seasonal_components]
 
 # def _convert_to_integer_season(s: float): # TODO: analyse brute force detector to mimic a cinversion method
 #     """

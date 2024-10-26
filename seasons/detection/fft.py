@@ -2,12 +2,13 @@ import numpy as np
 from numpy.typing import ArrayLike
 from scipy.signal import find_peaks
 from scipy.stats import chi2
-from..utils import stationarize
+from..utils import stationarize, cartesian_product
 
 def fft_seasonality(
     data: ArrayLike,
     alpha: float = 0.05,
-    plot_results: bool = False
+    plot_results: bool = False,
+    apply_cartesian: bool = False
 ) -> np.ndarray:
     """
     Detect seasonality using the Fast Fourier Transform (FFT) and peak detection.
@@ -46,4 +47,7 @@ def fft_seasonality(
         plt.show()
 
     # Return detected seasonal periods
-    return 1 / frequencies[peaks]
+    return cartesian_product(1 / frequencies[peaks]) if apply_cartesian else 1 / frequencies[peaks] 
+
+
+__all__ = [fft_seasonality]
