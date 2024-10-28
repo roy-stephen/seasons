@@ -1,8 +1,9 @@
 import itertools
 import operator
 import functools
+from numpy.typing import ArrayLike
 
-def compute_cartesian_products(seasonalities):
+def compute_cartesian_products(seasonalities: ArrayLike):
     """
     Compute the Cartesian product of distinct seasonalities and calculate their products.
 
@@ -12,6 +13,20 @@ def compute_cartesian_products(seasonalities):
     Returns:
     - list: List of original seasonalities and their Cartesian products.
     """
+    # Input validation
+    if len(seasonalities): 
+        try:
+            # Attempt to convert seasonalities to a list
+            seasonalities = list(seasonalities)
+        except TypeError:
+            raise ValueError("Input 'easons' must be convertible to a list")
+
+        # Check if all elements in the seasonalities list can be converted to integers
+        try:
+            seasonalities = [int(s) for s in seasonalities]
+        except ValueError:
+            raise ValueError("All elements in the 'easons' list must be convertible to integers")
+
     # Generate all possible combinations of seasonalities
     combinations = []
     for r in range(1, len(seasonalities) + 1):
@@ -23,9 +38,7 @@ def compute_cartesian_products(seasonalities):
         product = functools.reduce(operator.mul, combination, 1)
         products.append(product)
 
-    # Combine original seasonalities with their Cartesian products
-    result = seasonalities + [product for product in products if product not in seasonalities]
+    # Combine original seasonalities with their Cartesian products (using set to remove duplicates)
+    result = list(set(seasonalities + products))
 
     return result
-
-__all__ = [compute_cartesian_products]

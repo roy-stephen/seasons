@@ -2,13 +2,13 @@ import numpy as np
 from scipy.signal import find_peaks, welch
 from scipy.stats import chi2
 import matplotlib.pyplot as plt
-from..utils import stationarize, cartesian_product
+from..utils import stationarize, compute_cartesian_products
 
 def welch_seasonality(
     data: np.typing.ArrayLike,
     alpha: float = 0.05,
     plot_results: bool = True,
-    apply_cartesian: bool = True
+    apply_cartesian: bool = False
 ) -> np.ndarray:
     """
     Detect seasonality using Welch's periodogram, a modified Fourier analysis technique.
@@ -53,6 +53,4 @@ def welch_seasonality(
         plt.show()
 
     # Return detected seasonal periods
-    return cartesian_product(1 / frequencies[peaks]) if apply_cartesian else 1 / frequencies[peaks] 
-
-__all__ = [welch_seasonality]
+    return compute_cartesian_products(1 / frequencies[peaks]) if apply_cartesian else 1 / frequencies[peaks] 

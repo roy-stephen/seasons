@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="seasons",
-    version="0.2.1",  # Update the version number as needed
+    version="0.2.2",  # Update the version number as needed
     author="Stephen Ezin",
     author_email="iamstephenezin@gmail.com",
     description="A Python package for detecting seasonality in time series data",

@@ -37,5 +37,3 @@ def stationarize(
         p_value_adf = adf_result[1]  # Update p-value from ADF test
 
     return data, integration_order
-
-__all__ = [stationarize]

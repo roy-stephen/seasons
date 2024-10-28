@@ -2,7 +2,7 @@ import numpy as np
 from numpy.typing import ArrayLike
 from scipy.signal import find_peaks
 from scipy.stats import chi2
-from..utils import stationarize, cartesian_product
+from..utils import stationarize, compute_cartesian_products
 
 def fft_seasonality(
     data: ArrayLike,
@@ -47,7 +47,5 @@ def fft_seasonality(
         plt.show()
 
     # Return detected seasonal periods
-    return cartesian_product(1 / frequencies[peaks]) if apply_cartesian else 1 / frequencies[peaks] 
+    return compute_cartesian_products(1 / frequencies[peaks]) if apply_cartesian else 1 / frequencies[peaks] 
 
-
-__all__ = [fft_seasonality]

@@ -11,10 +11,11 @@ def plot_seasonal_components(
         seasons: np.typing.ArrayLike = None,
         alpha: float = 0.05
 ):
-    if not isinstance(series, np.typing.ArrayLike):
-        raise ValueError("Invalid series type")
-    if seasons and not isinstance(seasons, np.typing.ArrayLike):
-        raise ValueError("Invalid seasons type")
+    # TODO: fix this chunk
+    # if not isinstance(series, np.typing.ArrayLike):
+    #     raise ValueError("Invalid series type")
+    # if seasons and not isinstance(seasons, np.typing.ArrayLike):
+    #     raise ValueError("Invalid seasons type")
     
     # Check if all items of seasons are integer # TODO: allow for decimal seasons next
     if seasons: # if the user specify some seasonal periods
@@ -23,7 +24,7 @@ def plot_seasonal_components(
             seasons = [int(s) for s in seasons]
     else: # if the user don't specify any seasons
         print("No seasons were specified.\nUsing bruteforce to estimate seasonal periods...")
-        seasons = brute_force_seasonality(series, apply_cartesian=False)
+        seasons = brute_force_seasonality(series, alpha=alpha, apply_cartesian=False)
         print(f"Here are the detected seasons: {seasons}.")
     
     # Stationarize
@@ -59,7 +60,7 @@ def plot_seasonal_components(
             range(N),
             upper_bound,
             lower_bound,
-            color="aqua",
+            color="grey",
             alpha=0.15,
             label="Confidence Bound"
         )

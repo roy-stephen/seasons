@@ -1,7 +1,7 @@
 import numpy as np
 from scipy import stats
 from joblib import Parallel, delayed
-from..utils import stationarize, cartesian_product  # Import stationarize from utils module
+from..utils import stationarize, compute_cartesian_products  # Import stationarize from utils module
 
 def brute_force_seasonality(
     data: np.typing.ArrayLike, 
@@ -26,7 +26,10 @@ def brute_force_seasonality(
 
     # Initialize variables
     best_seasonality = []
-    max_seasonality = len(ts) // 2
+    max_seasonality = int(len(ts) // 3) # Set the maximum seasonality period to approximately 33% of the time series length
+    # Rationale:
+    # - Ensure the seasonality pattern has sufficient repetitions to be confirmed (at least 3 full cycles)
+    # - This threshold helps prevent false positives by requiring a more robust seasonal signal
 
     # Loop through possible seasonality periods
     for seasonality in range(min_seasonality, max_seasonality + 1):
@@ -44,6 +47,4 @@ def brute_force_seasonality(
         if p_value < alpha:
             best_seasonality.append(seasonality)
 
-    return cartesian_product(best_seasonality) if apply_cartesian else best_seasonality 
-
-__all__ = [brute_force_seasonality]
+    return compute_cartesian_products(best_seasonality) if apply_cartesian else best_seasonality 
