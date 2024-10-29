@@ -7,6 +7,7 @@ def brute_force_seasonality(
     data: np.typing.ArrayLike, 
     alpha: float = 0.05, 
     min_seasonality: int = 2,
+    seasonality_type: str = 'auto',
     apply_cartesian: bool = False
 ) -> list[int]:
     """
@@ -22,7 +23,12 @@ def brute_force_seasonality(
     """
 
     # Stationarize data
-    ts, _ = stationarize(data=data)
+    ts, _, seasonality_type = stationarize(data=data, seasonality_type=seasonality_type)
+    
+    # Handle NA
+    if seasonality_type == 'multiplicative':
+        ts = np.nan_to_num(x=ts, nan=0)
+        
 
     # Initialize variables
     best_seasonality = []
@@ -47,4 +53,4 @@ def brute_force_seasonality(
         if p_value < alpha:
             best_seasonality.append(seasonality)
 
-    return compute_cartesian_products(best_seasonality) if apply_cartesian else best_seasonality 
+    return (seasonality_type, compute_cartesian_products(best_seasonality)) if apply_cartesian else (seasonality_type, best_seasonality)

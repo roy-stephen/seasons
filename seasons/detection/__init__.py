@@ -6,4 +6,4 @@ from.brute_force import brute_force_seasonality
 from.fft import fft_seasonality
 from.welch import welch_seasonality
 
-__all__ = ["brute_force_seasonality", "fft_seasonality", "welch_seasonality"]
+del brute_force, fft, welch

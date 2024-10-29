@@ -8,6 +8,7 @@ def fft_seasonality(
     data: ArrayLike,
     alpha: float = 0.05,
     plot_results: bool = False,
+    seasonality_type: str = 'auto',
     apply_cartesian: bool = False
 ) -> np.ndarray:
     """
@@ -23,8 +24,12 @@ def fft_seasonality(
     """
 
     # Stationarize data
-    ts, _ = stationarize(data=data)
-
+    ts, _, seasonality_type = stationarize(data=data, seasonality_type=seasonality_type)
+    
+    # Handle NA
+    if seasonality_type == 'multiplicative':
+        ts = np.nan_to_num(x=ts, nan=0)
+        
     # Compute FFT
     fourier = np.fft.rfft(ts)
     psd = np.abs(fourier)**2 / len(ts)
@@ -47,5 +52,5 @@ def fft_seasonality(
         plt.show()
 
     # Return detected seasonal periods
-    return compute_cartesian_products(1 / frequencies[peaks]) if apply_cartesian else 1 / frequencies[peaks] 
+    return seasonality_type, compute_cartesian_products(1 / frequencies[peaks]) if apply_cartesian else seasonality_type, 1 / frequencies[peaks] 
 

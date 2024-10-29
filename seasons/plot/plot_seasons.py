@@ -9,6 +9,7 @@ from..utils import stationarize
 def plot_seasonal_components(
         series: np.typing.ArrayLike,
         seasons: np.typing.ArrayLike = None,
+        seasonality_type: str = 'auto',
         alpha: float = 0.05
 ):
     # TODO: fix this chunk
@@ -24,11 +25,11 @@ def plot_seasonal_components(
             seasons = [int(s) for s in seasons]
     else: # if the user don't specify any seasons
         print("No seasons were specified.\nUsing bruteforce to estimate seasonal periods...")
-        seasons = brute_force_seasonality(series, alpha=alpha, apply_cartesian=False)
-        print(f"Here are the detected seasons: {seasons}.")
+        seasonality_type, seasons = brute_force_seasonality(series, alpha=alpha, apply_cartesian=False, seasonality_type=seasonality_type)
+        print(f"Detected seasons: {seasons}.")
     
     # Stationarize
-    stationarized, integration_order = stationarize(data=series, alpha=0.05)
+    stationarized, integration_order, seasonality_type = stationarize(data=series, alpha=0.05, seasonality_type=seasonality_type)
     N = len(stationarized)
     
     # Initialize plot
@@ -37,7 +38,7 @@ def plot_seasonal_components(
     # Plot series
     ax[0].plot(series, label="Original series")
     ax[0].legend()
-    ax[1].plot(stationarized, label=f"Stationary series (d={int(integration_order)})")
+    ax[1].plot(stationarized, label=f"Stationary series, d={int(integration_order)}, Seas. type={seasonality_type}")
     ax[1].legend()
 
     # initialize total seasonal effect
@@ -61,7 +62,7 @@ def plot_seasonal_components(
             upper_bound,
             lower_bound,
             color="grey",
-            alpha=0.15,
+            alpha=0.3,
             label="Confidence Bound"
         )
         ax[i+4].legend()
@@ -73,6 +74,7 @@ def plot_seasonal_components(
     ax[3].plot(residuals, label=f"Residuals, d={integration_order}")
     ax[3].legend()
     # Render plot
+    plt.tight_layout()
     plt.suptitle("Seasonal Components")
     plt.show()
 
@@ -182,8 +184,6 @@ def _repeat_array_until_length(arr, desired_length):
     repetitions = int(np.ceil(desired_length / len(arr)))  # Calculate repetitions needed
     repeated_arr = np.tile(arr, repetitions)  # Repeat the array
     return repeated_arr[:desired_length]  # Truncate to the desired length
-
-__all__ = [plot_seasonal_components]
 
 # def _convert_to_integer_season(s: float): # TODO: analyse brute force detector to mimic a cinversion method
 #     """

@@ -8,6 +8,7 @@ def welch_seasonality(
     data: np.typing.ArrayLike,
     alpha: float = 0.05,
     plot_results: bool = True,
+    seasonality_type: str = 'auto',
     apply_cartesian: bool = False
 ) -> np.ndarray:
     """
@@ -26,8 +27,12 @@ def welch_seasonality(
     """
 
     # Stationarize data
-    ts, _ = stationarize(data=data)
-
+    ts, _, seasonality_type = stationarize(data=data, seasonality_type=seasonality_type)
+    
+    # Handle NA
+    if seasonality_type == 'multiplicative':
+        ts = np.nan_to_num(x=ts, nan=0)
+        
     # Compute Welch's periodogram
     N = len(data)
     nperseg = N // 3
@@ -53,4 +58,4 @@ def welch_seasonality(
         plt.show()
 
     # Return detected seasonal periods
-    return compute_cartesian_products(1 / frequencies[peaks]) if apply_cartesian else 1 / frequencies[peaks] 
+    return seasonality_type, compute_cartesian_products(1 / frequencies[peaks]) if apply_cartesian else seasonality_type, 1 / frequencies[peaks] 

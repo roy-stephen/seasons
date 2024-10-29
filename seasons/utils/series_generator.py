@@ -1,6 +1,6 @@
 import numpy as np
 
-def series_generator(
+def generate_series(
     length: int,
     seasonality_periods: list[int] = None,
     seasonality_amplitudes: list[float] = None,
