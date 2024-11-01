@@ -45,9 +45,16 @@ def brute_force_seasonality(
 
         # Reshape data to apply ANOVA
         reshaped_data = ts[:len(ts) // seasonality * seasonality].reshape(-1, seasonality)
+        # Reshape data to apply ANOVA (consecutive segments of the same length)
+        # reshaped_data = [ts[i:i+seasonality] for i in range(0, len(ts), seasonality)]
 
         # Apply one-way ANOVA
         _, p_value = stats.f_oneway(*reshaped_data.T)
+        # here by transposing i am comparing the first element of each seasonl period to the second, the third, ...
+        # ideally i should perform the anova without rechaping and look for seasonalities where p-value >= thr.
+        # however, low nimber of observations make this approach non bearable.
+        # although this one is not the best one, it is hard to find data where this approach find a seasonal period that
+        # is not somehow valid.
 
         # Check if seasonality is significant
         if p_value < alpha:

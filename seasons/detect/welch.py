@@ -58,4 +58,4 @@ def welch_seasonality(
         plt.show()
 
     # Return detected seasonal periods
-    return seasonality_type, compute_cartesian_products(1 / frequencies[peaks]) if apply_cartesian else seasonality_type, 1 / frequencies[peaks] 
+    return (seasonality_type, compute_cartesian_products(1 / frequencies[peaks])) if apply_cartesian else (seasonality_type, 1 / frequencies[peaks])
