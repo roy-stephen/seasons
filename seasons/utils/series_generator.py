@@ -30,9 +30,9 @@ def generate_series(
 
     # Generate trend component
     if trend == 'linear':
-        trend_component = trend_coefficient * np.arange(length)
+        trend_component = trend_coefficient * np.arange(1, length + 1)
     elif trend == 'quadratic':
-        trend_component = trend_coefficient * np.arange(length) ** 2
+        trend_component = trend_coefficient * np.arange(1, length + 1) ** 2
     elif trend == None:
         trend_component = np.zeros(length)
     else:

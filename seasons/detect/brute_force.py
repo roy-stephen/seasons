@@ -1,14 +1,16 @@
 import numpy as np
 from scipy import stats
-from joblib import Parallel, delayed
-from..utils import stationarize, compute_cartesian_products  # Import stationarize from utils module
+from..utils import remove_trend, compute_cartesian_products, compute_seasonal_effects
 
 def brute_force_seasonality(
     data: np.typing.ArrayLike, 
     alpha: float = 0.05, 
     min_seasonality: int = 2,
     seasonality_type: str = 'auto',
-    apply_cartesian: bool = False
+    apply_cartesian: bool = False,
+    return_effects: bool = False,
+    display_plot: bool = False,
+    use_linear_reg: bool = False,
 ) -> list[int]:
     """
     Brute-force seasonality detector using one-way ANOVA.
@@ -22,8 +24,8 @@ def brute_force_seasonality(
     - list[int]: List of detected seasonality periods.
     """
 
-    # Stationarize data
-    ts, _, seasonality_type = stationarize(data=data, seasonality_type=seasonality_type)
+    # Detrend data
+    _, ts, seasonality_type = remove_trend(data=data, seasonality_type=seasonality_type, use_linear_reg=use_linear_reg)
     
     # Handle NA
     if seasonality_type == 'multiplicative':
@@ -45,8 +47,7 @@ def brute_force_seasonality(
 
         # Reshape data to apply ANOVA
         reshaped_data = ts[:len(ts) // seasonality * seasonality].reshape(-1, seasonality)
-        # Reshape data to apply ANOVA (consecutive segments of the same length)
-        # reshaped_data = [ts[i:i+seasonality] for i in range(0, len(ts), seasonality)]
+
 
         # Apply one-way ANOVA
         _, p_value = stats.f_oneway(*reshaped_data.T)
@@ -60,4 +61,22 @@ def brute_force_seasonality(
         if p_value < alpha:
             best_seasonality.append(seasonality)
 
-    return (seasonality_type, compute_cartesian_products(best_seasonality)) if apply_cartesian else (seasonality_type, best_seasonality)
+    if apply_cartesian:
+        best_seasonality = compute_cartesian_products(best_seasonality)
+    else:
+        pass
+
+    if not return_effects: 
+        return seasonality_type, best_seasonality
+
+    d = compute_seasonal_effects(
+        data=data, 
+        seasons=best_seasonality,
+        alpha=alpha, 
+        seasonality_type=seasonality_type,
+        return_effects=True,
+        display_plot=display_plot,
+        use_linear_reg=use_linear_reg
+    )
+
+    return seasonality_type, d

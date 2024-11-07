@@ -2,7 +2,7 @@ import numpy as np
 from numpy.typing import ArrayLike
 from scipy.signal import find_peaks
 from scipy.stats import chi2
-from..utils import stationarize, compute_cartesian_products
+from..utils import remove_trend, compute_cartesian_products
 
 def fft_seasonality(
     data: ArrayLike,
@@ -23,8 +23,8 @@ def fft_seasonality(
     - np.ndarray: Array of detected seasonal periods (1 / significant frequencies).
     """
 
-    # Stationarize data
-    ts, _, seasonality_type = stationarize(data=data, seasonality_type=seasonality_type)
+    # Detrend data
+    _, ts, seasonality_type = remove_trend(data=data, seasonality_type=seasonality_type)
     
     # Handle NA
     if seasonality_type == 'multiplicative':
@@ -52,5 +52,8 @@ def fft_seasonality(
         plt.show()
 
     # Return detected seasonal periods
-    return (seasonality_type, compute_cartesian_products(1 / frequencies[peaks])) if apply_cartesian else (seasonality_type, 1 / frequencies[peaks])
-
+    if apply_cartesian:
+        cartesian_result = compute_cartesian_products(1 / frequencies[peaks])
+        return (seasonality_type, cartesian_result)
+    else:
+        return (seasonality_type, 1 / frequencies[peaks])
