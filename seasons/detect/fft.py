@@ -53,7 +53,7 @@ def fft_seasonality(
 
     # Return detected seasonal periods
     if apply_cartesian:
-        cartesian_result = compute_cartesian_products(1 / frequencies[peaks])
+        cartesian_result = compute_cartesian_products(1 / frequencies[peaks], len(ts))
         return (seasonality_type, cartesian_result)
     else:
         return (seasonality_type, 1 / frequencies[peaks])

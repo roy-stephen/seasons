@@ -3,12 +3,13 @@ import operator
 import functools
 from numpy.typing import ArrayLike
 
-def compute_cartesian_products(seasonalities: ArrayLike):
+def compute_cartesian_products(seasonalities: ArrayLike, N: int):
     """
     Compute the Cartesian product of distinct seasonalities and calculate their products.
 
     Args:
     - seasonalities (list): List of seasonalities.
+    - N (int): Series length
 
     Returns:
     - list: List of original seasonalities and their Cartesian products.
@@ -40,5 +41,6 @@ def compute_cartesian_products(seasonalities: ArrayLike):
 
     # Combine original seasonalities with their Cartesian products (using set to remove duplicates)
     result = list(set(seasonalities + products))
+    result = [x for x in result if x <= N]
 
     return result

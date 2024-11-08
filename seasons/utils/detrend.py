@@ -3,7 +3,7 @@ from scipy.stats import bartlett, f_oneway
 from statsmodels.api import add_constant, OLS
 from PyEMD import EMD
 
-def remove_trend(data, seasonality_type: str = 'auto', use_linear_reg: bool = True):
+def remove_trend(data, seasonality_type: str = 'auto', use_linear_reg: bool = False):
     """
     Stationarize a time series based on the specified seasonality type.
 
@@ -35,8 +35,11 @@ def remove_trend(data, seasonality_type: str = 'auto', use_linear_reg: bool = Tr
 
 def _estimate_and_validate_trend(data, use_linear_reg):
     trend = _estimate_trend(data, use_linear_reg)
-    while _has_seasonality(trend):
-        trend = _estimate_trend(trend, use_linear_reg)
+    if use_linear_reg == False:
+        second_trend = _estimate_trend(trend, use_linear_reg)
+        while _has_seasonality(trend - second_trend):
+            trend = _estimate_trend(trend, use_linear_reg)
+            second_trend = _estimate_trend(trend, use_linear_reg)
     return trend
 
 

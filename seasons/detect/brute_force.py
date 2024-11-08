@@ -25,7 +25,7 @@ def brute_force_seasonality(
     """
 
     # Detrend data
-    _, ts, seasonality_type = remove_trend(data=data, seasonality_type=seasonality_type, use_linear_reg=use_linear_reg)
+    trend, ts, seasonality_type = remove_trend(data=data, seasonality_type=seasonality_type, use_linear_reg=use_linear_reg)
     
     # Handle NA
     if seasonality_type == 'multiplicative':
@@ -62,21 +62,27 @@ def brute_force_seasonality(
             best_seasonality.append(seasonality)
 
     if apply_cartesian:
-        best_seasonality = compute_cartesian_products(best_seasonality)
+        best_seasonality = compute_cartesian_products(best_seasonality, len(ts))
     else:
         pass
 
     if not return_effects: 
         return seasonality_type, best_seasonality
 
-    d = compute_seasonal_effects(
-        data=data, 
-        seasons=best_seasonality,
-        alpha=alpha, 
-        seasonality_type=seasonality_type,
-        return_effects=True,
-        display_plot=display_plot,
-        use_linear_reg=use_linear_reg
-    )
+    if best_seasonality:
+        d = compute_seasonal_effects(
+            data=data, 
+            already_detrended=True,
+            trend=trend,
+            detrended=ts,
+            seasons=best_seasonality,
+            alpha=alpha, 
+            seasonality_type=seasonality_type,
+            return_effects=True,
+            display_plot=display_plot,
+            use_linear_reg=use_linear_reg
+        )
+    else:
+        d = {}
 
     return seasonality_type, d
