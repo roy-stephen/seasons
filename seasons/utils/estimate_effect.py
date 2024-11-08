@@ -1,8 +1,7 @@
 import numpy as np
-from scipy import stats
-from..utils import remove_trend
-from statsmodels.api import OLS, add_constant
 import matplotlib.pyplot as plt
+from statsmodels.api import OLS
+from..utils import remove_trend
 
 def compute_seasonal_effects(
     data: np.ndarray,
@@ -18,10 +17,10 @@ def compute_seasonal_effects(
     normalize: bool = False,
 ) -> dict:
     """
-    Plot seasonal components of a time series.
+    Compute seasonal effects of a time series.
 
     Args:
-    - series (np.ndarray): Input time series.
+    - data (np.ndarray): Input time series.
     - seasons (np.ndarray): Array of seasonal periods.
     - seasonality_type (str): Type of seasonality ('additive' or 'multiplicative' or 'auto'). Defaults to 'auto'.
     - repeat_seasons (bool, optional): Whether to repeat seasonal effects to match series length. Defaults to False.
@@ -36,8 +35,17 @@ def compute_seasonal_effects(
     if not already_detrended:
         trend, detrended, seasonality_type = remove_trend(data=data, seasonality_type=seasonality_type, use_linear_reg=use_linear_reg)
     N = len(detrended)
+    
     # estimating effects
-    seasons_effects = _confidence_interval(data=detrended, seasonal_periods=seasons, normalize=True, seasonality_type=seasonality_type, alpha=alpha)
+    c, seasons_effects = _confidence_interval(data=detrended, seasonal_periods=seasons, normalize=normalize, seasonality_type=seasonality_type, alpha=alpha)
+    if normalize:
+        if seasonality_type == 'additive':
+            trend -= abs(c)
+            detrended = data - trend
+        else:
+            trend *= c
+            detrended = data / trend
+
     
     if display_plot:
         _plot_seasonal_components(
@@ -54,12 +62,23 @@ def compute_seasonal_effects(
 
 def _plot_seasonal_components(
     seasonal_components: dict,
-    data, 
-    trend, 
-    detrended, 
-    seasonality_type
+    data: np.typing.ArrayLike, 
+    trend: np.typing.ArrayLike, 
+    detrended: np.typing.ArrayLike, 
+    seasonality_type: str
 ) -> None:
+    """
+    Plot seasonal components of a time series.
 
+    Args:
+    - seasonal_components: Dictionary with seasonal effects
+    - data: Original time series data
+    - detrended: Detrended time series data
+    - seasonality_type: Type of seasonality (additive, multiplicative)
+
+    Returns:
+    - None
+    """
     N_FIG = len(seasonal_components) + 4
     fig, ax = plt.subplots(nrows=N_FIG, ncols=1, figsize=(16, 6*N_FIG))
 
@@ -112,37 +131,6 @@ def _plot_seasonal_components(
 
     return None
 
-def _reshape_to_2d(array, rows):
-    """
-    Reshape a 1D array to a 2D shape with a specified number of rows, 
-    automatically determining the minimum number of columns required to 
-    ensure the output array has at least as many elements as the input array, 
-    filling with np.nan if necessary, and filling in column-first order.
-
-    Parameters:
-    - array (np.ndarray): The input 1D NumPy array.
-    - rows (int): The desired number of rows for the output 2D array.
-
-    Returns:
-    - reshaped_array (np.ndarray): The reshaped 2D NumPy array.
-    """
-    # Calculate the minimum number of columns required
-    cols = max(np.ceil(array.size / rows).astype(int), 1)  # Ensure cols is at least 1
-    
-    # Calculate the total number of elements in the new shape
-    total_elements_needed = rows * cols
-    
-    # Extend the original array with np.nan if necessary
-    if total_elements_needed > array.size:
-        extended_array = np.append(array, np.full(total_elements_needed - array.size, np.nan))
-    else:
-        extended_array = array
-    
-    # Reshape the (possibly extended) array to the desired 2D shape in column-first order
-    reshaped_array = extended_array.reshape(cols, rows, order='C').T  # Transpose to get rows first in output
-    
-    return reshaped_array
-
 
 def _confidence_interval(
     data: np.ndarray,
@@ -152,7 +140,17 @@ def _confidence_interval(
     alpha: float = 0.05,
 ) -> dict:
     """
-    data: detreded time series
+    Compute confidence intervals for seasonal effects.
+
+    Args:
+    - data: Detrended time series data
+    - seasonal_periods: List of seasonal periods
+    - normalize: Whether to normalize the seasonal effects
+    - seasonality_type: Type of seasonality (additive, multiplicative)
+    - alpha: Confidence level
+
+    Returns:
+    - Dictionary with seasonal components and confidence intervals
     """
     X = _generate_design_matrix(len(data), seasonal_periods=seasonal_periods)
     #X = add_constant(X)
@@ -161,6 +159,7 @@ def _confidence_interval(
     coefficients = model.params
     confidence_int = model.conf_int(alpha)
     # normalize
+    min_coefficients = None
     if normalize:
         min_coefficients = np.min(coefficients)
         if seasonality_type == 'additive':
@@ -188,10 +187,20 @@ def _confidence_interval(
         
         # Update coefficient index
         coeff_index += period_name
-    return seasonal_components
+    return min_coefficients, seasonal_components
     
 
 def _generate_design_matrix(N, seasonal_periods):
+    """
+    Generate a design matrix for seasonal effect estimation.
+
+    - N: Length of the time series
+    - seasonal_periods: List of seasonal periods
+    - kwargs: Reserved for future expansion
+
+    Returns:
+    - Design matrix as a dictionary
+    """
     K = len(seasonal_periods)
     num_seasonal_effects = sum(seasonal_periods)
     A = np.zeros((N, num_seasonal_effects))

@@ -9,7 +9,7 @@ def compute_cartesian_products(seasonalities: ArrayLike, N: int):
 
     Args:
     - seasonalities (list): List of seasonalities.
-    - N (int): Series length
+    - N (int): Series length.
 
     Returns:
     - list: List of original seasonalities and their Cartesian products.
@@ -20,13 +20,13 @@ def compute_cartesian_products(seasonalities: ArrayLike, N: int):
             # Attempt to convert seasonalities to a list
             seasonalities = list(seasonalities)
         except TypeError:
-            raise ValueError("Input 'easons' must be convertible to a list")
+            raise ValueError("Input 'seasons' must be convertible to a list")
 
         # Check if all elements in the seasonalities list can be converted to integers
         try:
             seasonalities = [int(s) for s in seasonalities]
         except ValueError:
-            raise ValueError("All elements in the 'easons' list must be convertible to integers")
+            raise ValueError("All elements in the 'seasons' list must be convertible to integers")
 
     # Generate all possible combinations of seasonalities
     combinations = []

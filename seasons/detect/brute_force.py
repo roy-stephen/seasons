@@ -11,6 +11,7 @@ def brute_force_seasonality(
     return_effects: bool = False,
     display_plot: bool = False,
     use_linear_reg: bool = False,
+    normalize: bool = False
 ) -> list[int]:
     """
     Brute-force seasonality detector using one-way ANOVA.
@@ -80,7 +81,8 @@ def brute_force_seasonality(
             seasonality_type=seasonality_type,
             return_effects=True,
             display_plot=display_plot,
-            use_linear_reg=use_linear_reg
+            use_linear_reg=use_linear_reg,
+            normalize=normalize
         )
     else:
         d = {}
